@@ -17,6 +17,8 @@ class DiscordManager:
         self.logger = logger
         self.config = config
         self.events = event_manager
+	#Temp hack - eventually add this as a config option
+	self.removeMarkdown = 0
 
         self.dispatch_channels = [config['links'][name]['channels']['discord'] for name in config['links'] if 'discord' in config['links'][name]['channels']]
         # simplifies down to a simple list of IRC chans -> Discord chans
@@ -88,19 +90,19 @@ class DiscordManager:
     # retrieve channel objects we use to send messages
     @asyncio.coroutine
     def on_ready(self):
-        print('Discord -- Logged in as')
-        print(self.client.user.name)
-        print(self.client.user.id)
-        print('------')
+        self.logger.debug('Discord -- Logged in as')
+        self.logger.debug(self.client.user.name)
+        self.logger.debug(self.client.user.id)
+        self.logger.debug('------')
 
         # show all available channels and fill out our internal lists
-        print('Available Discord Channels:')
+        self.logger.debug('Available Discord Channels:')
         for channel in self.client.get_all_channels():
-            print('#%s (%s)' % (channel.name, channel.id))
+            self.logger.debug(' '.join(channel.name).join(channel.id))
             if channel.name in self.dispatch_channels:
                 self.discord_channels[channel.name] = channel
 
-        print('------')
+        self.logger.debug('------')
 
         self.events.dispatch('discord ready', {})
 
@@ -114,12 +116,40 @@ class DiscordManager:
             # dispatch all but our own messages
             if str(message.author) != str(self.client.user):
                 self.logger.debug('discord: raw 3 - dispatching')
+                self.logger.debug('discord: raw 4 - clean message' + message.clean_content)
                 full_message = [message.clean_content]
                 if not full_message[0]:
                     full_message.pop(0)
+
+                #Small call to strip any Discord Markdown from the outgoing message.
+                #Things to catch:
+                # *<text>*, **<text>**, ***<text>***, __<text>__, __*<text>*__, __**<text>**__, __***<text>***__
+                # `<text>`, ```<text>```
+                #if(self.removeMarkdown):
+                    #Check for code blocks. These are full line, easy to spot.
+                    #if(full_message[0][0:2]=='```' && full_message[0][-3:]=='```'):
+                    #     full_message[0] = string.strip(full_message[0],'```')
+                    #if(full_message[0][0]=='`' && full_message[0][-1]=='`'):
+                    #    full_message[0] = string.strip(full_message[0],'`')
+                    #For the rest of Markdown - the markup can appear in any word.
+                    #fMsgChk = string.split(full_message[0])
+                    #newFM = []
+                    #for chk in fMsgChk:
+                        #Now look for underlines, these can appear anywhere in the message.
+                    #    if(chk[0:1]=='__' && chk[-2:]=='__'):
+                    #        chk = string.strip(chk,'__')
+                        #Now look for the Bold and Italics Patterns
+                    #    if(chk[0:1]=='**' && chk[-2:]=='**'):
+                    #        chk = string.strip(chk,'**')
+                    #    if(chk[0]='*' && chk[-1]='*'):
+                    #        chk = string.strip(chk,'*')
+                        #Construct new output
+                    #    newFM.append(chk)
+                    #full_message[0] = ' '.join(newFM)
+
                 for attachment in message.attachments:
                     full_message.append(attachment.get('url', 'No URL for attachment'))
-
+        
                 info = {
                     'type': 'message',
                     'service': 'discord',
@@ -132,11 +162,10 @@ class DiscordManager:
 
     # receiving messages
     def handle_irc_message(self, event):
-        for chan in self.channels['irc'].get(event['channel'].name, []):
+        for chan in self.channels['irc'].get(str(event['channel'].name), []):
             assembled_message = '**<{}>** {}'.format(event['source'].nick, event['message'])
             asyncio.async(self.client.send_message(self.discord_channels[chan], assembled_message))
 
     def handle_irc_action(self, event):
-        for chan in self.channels['irc'].get(event['channel'].name, []):
+        for chan in self.channels['irc'].get(str(event['channel'].name), []):
             assembled_message = '**\\* {}** {}'.format(event['source'].nick, event['message'])
-            asyncio.async(self.client.send_message(self.discord_channels[chan], assembled_message))

@@ -54,6 +54,7 @@ while True:
     name = input('Link Name: ').strip()
     slug = slugify(name)
     log = is_ok('Log this link? [n] ', False)
+    # TODO - Somehow note in config process that the hash in discord channel names is ignored.
     discord_chan = input('Discord Channel: ').strip()
     irc_chan = input('IRC Channel: ').strip()
 
