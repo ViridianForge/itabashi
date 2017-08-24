@@ -1,9 +1,9 @@
-Itabashi (板橋) - Discord-IRC Bridge
+Itabashi-WIN (板橋) - ChipWIN Fork of the Itabashi Discord-IRC Bridge
 ====================================
 
 **Itabashi** is a bot that syncs messages between a Discord and an IRC channel. It is written in Python, using the `discord.py <https://github.com/Rapptz/discord.py>`_ and `gIRC <https://github.com/DanielOaks/girc>`_ libraries.
 
-Itabashi was developed by the Bibliotheca Anonoma to coordinate operations between its Discord and IRC channels.
+Itabashi was developed by the Bibliotheca Anonoma to coordinate operations between its Discord and IRC channels. Itabashi=WIN is a fork of this project with modifications to enhance opertions between Chiptunes=WIN's Discord and IRC chatrooms. 
 
 Dependencies
 ------------
