@@ -128,4 +128,4 @@ target/
 #
 /config.json
 /itabashi.log
-
+/service.sh
