@@ -1,13 +1,16 @@
 # Itabashi - quick and dirty discord bot
 # itabashi_discord.py: discord bot
 # Developed by Antonizoon for the Bibliotheca Anonoma
+# Further developed by ViridianForge for Chiptunes=WIN
 import asyncio
 import sys
+import regex
 
 import aiohttp
 import discord
 import websockets
 from italib import backoff
+from italib import utils
 
 loop = asyncio.get_event_loop()
 
@@ -17,9 +20,10 @@ class DiscordManager:
         self.logger = logger
         self.config = config
         self.events = event_manager
-	#Temp hack - eventually add this as a config option
-	self.removeMarkdown = 0
-
+        #Temp hack - eventually add this as a config option
+        self.removeMarkdown = 1
+    
+        print("Initializing Discord")
         self.dispatch_channels = [config['links'][name]['channels']['discord'] for name in config['links'] if 'discord' in config['links'][name]['channels']]
         # simplifies down to a simple list of IRC chans -> Discord chans
         self.channels = {
@@ -110,42 +114,53 @@ class DiscordManager:
     @asyncio.coroutine
     def on_message(self, message):
         # for our watched channels only
-        self.logger.debug('discord: raw 1')
         if message.channel.name.lower() in self.dispatch_channels:
-            self.logger.debug('discord: raw 2')
             # dispatch all but our own messages
             if str(message.author) != str(self.client.user):
-                self.logger.debug('discord: raw 3 - dispatching')
-                self.logger.debug('discord: raw 4 - clean message' + message.clean_content)
                 full_message = [message.clean_content]
                 if not full_message[0]:
                     full_message.pop(0)
 
                 #Small call to strip any Discord Markdown from the outgoing message.
                 #Things to catch:
-                # *<text>*, **<text>**, ***<text>***, __<text>__, __*<text>*__, __**<text>**__, __***<text>***__
+                # ~~<text>~~, *<text>*, **<text>**, ***<text>***, __<text>__, __*<text>*__, __**<text>**__, __***<text>***__
                 # `<text>`, ```<text>```
-                #if(self.removeMarkdown):
+                #Possible TODO - Breakout to function in libraries
+                if(self.removeMarkdown):
                     #Check for code blocks. These are full line, easy to spot.
-                    #if(full_message[0][0:2]=='```' && full_message[0][-3:]=='```'):
-                    #     full_message[0] = string.strip(full_message[0],'```')
-                    #if(full_message[0][0]=='`' && full_message[0][-1]=='`'):
-                    #    full_message[0] = string.strip(full_message[0],'`')
-                    #For the rest of Markdown - the markup can appear in any word.
-                    #fMsgChk = string.split(full_message[0])
-                    #newFM = []
-                    #for chk in fMsgChk:
-                        #Now look for underlines, these can appear anywhere in the message.
-                    #    if(chk[0:1]=='__' && chk[-2:]=='__'):
-                    #        chk = string.strip(chk,'__')
-                        #Now look for the Bold and Italics Patterns
-                    #    if(chk[0:1]=='**' && chk[-2:]=='**'):
-                    #        chk = string.strip(chk,'**')
-                    #    if(chk[0]='*' && chk[-1]='*'):
-                    #        chk = string.strip(chk,'*')
-                        #Construct new output
-                    #    newFM.append(chk)
-                    #full_message[0] = ' '.join(newFM)
+                    if(full_message[0][0:2]=='```' and full_message[0][-3:]=='```'):
+                         full_message[0] = str.strip(full_message[0],'```')
+                    if(full_message[0][0]=='`' and full_message[0][-1]=='`'):
+                        full_message[0] = str.strip(full_message[0],'`')
+                    #For the rest of Markdown - the markup can appear on any word, or
+                    #any set of words.
+                    #TODO -  Get this working
+                    strike_through = regex.compile(r'(?<=~~[^~~]+~~)\W+\W+(?=~~[^~~]+~~)')
+                    underline_bold_italics = regex.compile('__\*\*\*.+\*\*\*__')
+                    underline_bold = regex.compile('__\*\*.+\*\*__')
+                    underline = regex.compile('__.+__')
+                    bold_italics = regex.compile('\*\*\*.+\*\*\*')
+                    bold = regex.compile('\*\*.+\*\*')
+                    italics = regex.compile('\*.+\*')
+                    #Cleanse one - strike through - ~~<text>~~
+                    print(full_message[0])
+                    cln_msg = utils.remove_markdown(full_message[0],'~~','~~')
+                    #Cleanse two - underline bold italics - __***<text>***__
+                    cln_msg = utils.remove_markdown(cln_msg,'__***','***__')
+                    #Cleanse three - underline bold - __**<text>**__
+                    cln_msg = utils.remove_markdown(cln_msg,'__**','**__')
+                    #Cleanse four - underline - __<text>__
+                    cln_msg = utils.remove_markdown(cln_msg,'__','__')
+                    #Cleanse five - bold italics - ***<text>***
+                    cln_msg = utils.remove_markdown(cln_msg,'***','***')
+                    #Cleanse fix - bold - **<text>**
+                    cln_msg = utils.remove_markdown(cln_msg,'**','**')
+                    #Cleanse seven - italics - *<text>*
+                    cln_msg = utils.remove_markdown(cln_msg,'*','*')
+                    print(cln_msg)
+
+                    #Replace full_message with cleansed message
+                    full_message[0] = cln_msg
 
                 for attachment in message.attachments:
                     full_message.append(attachment.get('url', 'No URL for attachment'))

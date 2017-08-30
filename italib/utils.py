@@ -2,6 +2,40 @@
 # mostly taken from https://github.com/DanielOaks/goshu but I don't care about the license
 import getpass
 
+#Function to strip paired tags from strings
+#before passing them around
+def remove_markdown(msg, left_tag, right_tag):
+    print(msg)
+    print(left_tag)
+    print(right_tag)
+    matchMode = 0
+    locationsToRemove = []
+    memory=[]
+    newMsg = []
+    for i in range(0, len(msg)):
+        if matchMode == 0:
+            #Goal here is to make sure we don't go off the end of the string and match the left tag
+            if (i+len(left_tag)<=len(msg)) and (msg[i:i+len(left_tag)] == left_tag):
+                #Flip matching bit
+                matchMode=1
+                #Note locations to remove
+                memory.extend(range(i,i+len(left_tag)))
+        elif matchMode == 1:
+            if (i+len(right_tag)<=len(msg)) and (msg[i:i+len(right_tag)] == right_tag):
+                #Flip matching bit
+                matchMode=0
+                #Got a matching pair - add memory
+                locationsToRemove.extend(memory)
+                locationsToRemove.extend(range(i,i+len(right_tag)))
+
+    #Replace Characters in listing locations with Empty Strings
+    print(locationsToRemove)
+    for i in range(0, len(msg)):
+        if i not in locationsToRemove:
+                newMsg.append(msg[i])
+
+    #Return the cleansed String
+    return ''.join(newMsg)
 
 def true_or_false(in_str):
     """Returns True/False if string represents it, else None."""

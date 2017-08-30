@@ -35,9 +35,10 @@ if __name__ == '__main__':
         with open('config.json', 'r') as config_file:
             config = json.loads(config_file.read())[0]
 
+        #Prep Discord End of Logging
         logging.basicConfig(filename=arguments['--log'], level=logging.DEBUG)
         logger = logging
-        logger.info('Logger started')
+        logger.info('Discord Logger started')
 
         # check config version
         if config.get('version', 0) < italib.CURRENT_CONFIG_VERSION:

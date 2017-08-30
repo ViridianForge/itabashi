@@ -1,3 +1,4 @@
 discord.py
 girc>=0.3.1
 python-slugify
+regex
