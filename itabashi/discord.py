@@ -135,15 +135,16 @@ class DiscordManager:
                     #For the rest of Markdown - the markup can appear on any word, or
                     #any set of words.
                     #TODO -  Get this working
-                    strike_through = regex.compile(r'(?<=~~[^~~]+~~)\W+\W+(?=~~[^~~]+~~)')
-                    underline_bold_italics = regex.compile('__\*\*\*.+\*\*\*__')
-                    underline_bold = regex.compile('__\*\*.+\*\*__')
-                    underline = regex.compile('__.+__')
-                    bold_italics = regex.compile('\*\*\*.+\*\*\*')
-                    bold = regex.compile('\*\*.+\*\*')
-                    italics = regex.compile('\*.+\*')
+                    #strike_through = regex.compile(r'(?<=~~[^~~]+~~)\W+\W+(?=~~[^~~]+~~)')
+                    #underline_bold_italics = regex.compile('__\*\*\*.+\*\*\*__')
+                    #underline_bold = regex.compile('__\*\*.+\*\*__')
+                    #underline = regex.compile('__.+__')
+                    #bold_italics = regex.compile('\*\*\*.+\*\*\*')
+                    #bold = regex.compile('\*\*.+\*\*')
+                    #italics = regex.compile('\*.+\*')
+                    #TODO - Convert this into a loop to remove character pairs from full msg
+                    #cln_msg = utils.remove_markdown(full_message[0],[pairs])
                     #Cleanse one - strike through - ~~<text>~~
-                    print(full_message[0])
                     cln_msg = utils.remove_markdown(full_message[0],'~~','~~')
                     #Cleanse two - underline bold italics - __***<text>***__
                     cln_msg = utils.remove_markdown(cln_msg,'__***','***__')
@@ -157,7 +158,6 @@ class DiscordManager:
                     cln_msg = utils.remove_markdown(cln_msg,'**','**')
                     #Cleanse seven - italics - *<text>*
                     cln_msg = utils.remove_markdown(cln_msg,'*','*')
-                    print(cln_msg)
 
                     #Replace full_message with cleansed message
                     full_message[0] = cln_msg
