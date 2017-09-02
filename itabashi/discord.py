@@ -4,7 +4,7 @@
 # Further developed by ViridianForge for Chiptunes=WIN
 import asyncio
 import sys
-import regex
+#import regex
 
 import aiohttp
 import discord
