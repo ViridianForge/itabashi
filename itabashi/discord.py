@@ -20,8 +20,6 @@ class DiscordManager:
         self.logger = logger
         self.config = config
         self.events = event_manager
-        #Temp hack - eventually add this as a config option
-        self.removeMarkdown = 1
     
         print("Initializing Discord")
         self.dispatch_channels = [config['links'][name]['channels']['discord'] for name in config['links'] if 'discord' in config['links'][name]['channels']]
@@ -31,6 +29,7 @@ class DiscordManager:
         }
         for name in config['links']:
             link = config['links'][name]['channels']
+            self.removeMarkdown = config['links'][name]['rem_md']
             if 'discord' in link and 'irc' in link:
                 if link['irc'] not in self.channels['irc']:
                     self.channels['irc'][link['irc']] = []
@@ -42,9 +41,12 @@ class DiscordManager:
         self.events.register('irc message', self.handle_irc_message)
         self.events.register('irc action', self.handle_irc_action)
 
-        # extract values we use from config
-        email = config['modules']['discord']['email']
-        password = config['modules']['discord']['password']
+        if not config['modules']['discord']['token'] is None:
+            token = config['modules']['discord']['token']
+        else:
+            #Throw Exception
+            logging.exception("No Bot Token set - unable to log in.")
+            return
 
         # create a client
         self.client = discord.Client()
@@ -63,7 +65,7 @@ class DiscordManager:
             # login to Discord
             while True:
                 try:
-                    yield from self.client.login(email, password)
+                    yield from self.client.login(token)
                 except (discord.HTTPException, aiohttp.ClientError):
                     logging.exception("discord.py failed to login, waiting and retrying")
                     yield from asyncio.sleep(retry.delay())

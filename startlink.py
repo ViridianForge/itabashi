@@ -36,7 +36,7 @@ if __name__ == '__main__':
             config = json.loads(config_file.read())[0]
 
         #Prep Discord End of Logging
-        logging.basicConfig(filename=arguments['--log'], level=logging.DEBUG)
+        logging.basicConfig(filename=arguments['--log'], filemode='w', level=logging.DEBUG)
         logger = logging
         logger.info('Discord Logger started')
 

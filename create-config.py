@@ -43,8 +43,7 @@ config['modules']['irc']['port'] = gui.get_number('Port: [{}] '.format(default_p
 
 # discord config
 print("\n~=~ Discord Configuration ~=~")
-config['modules']['discord']['email'] = input('Discord - Email: ')
-config['modules']['discord']['password'] = getpass.getpass('Discord - Password: ')
+config['modules']['discord']['token'] = input('Discord - Bot Token: ')
 
 # link config
 print('\n~=~ Link Configuration ~=~')
@@ -57,6 +56,8 @@ while True:
     # TODO - Somehow note in config process that the hash in discord channel names is ignored.
     discord_chan = input('Discord Channel: ').strip()
     irc_chan = input('IRC Channel: ').strip()
+
+    rem_md = is_ok('Strip Markdown from mesages before sending to IRC? [y] ', True)
 
     if slug in links:
         overwrite = is_ok('Link with that name already exists, overwrite existing link [y]? ', True)
@@ -78,6 +79,7 @@ while True:
     links[slug] = {
         'name': name,
         'log': log,
+        'rem_md': rem_md,
         'channels': {
             'discord': discord_chan,
             'irc': irc_chan,
